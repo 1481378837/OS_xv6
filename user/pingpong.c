@@ -17,6 +17,8 @@ int main()
     char buffer[SIZE];
     if(fork()==0)
     {
+        close(parent_fd[WRITE]);
+        close(child_fd[READ]);
         if(read(parent_fd[READ], buffer, SIZE) != SIZE ){
             fprintf(2,"parent -> child read_size err\n");
             exit();

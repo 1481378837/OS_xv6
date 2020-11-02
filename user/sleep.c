@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
         exit();
     }
     int period = atoi(argv[1]);
-    printf("going to sleep\n");
+    printf("(nothing happens for a little while)\n");
     sleep(period);
     exit();
 }
