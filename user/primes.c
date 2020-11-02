@@ -28,23 +28,23 @@ void primes()
     if(fork()==0)
     {
         close(READ);
-        dup(fd[READ]); //copy read_fd -> 0
-        close_pipe(fd);
-        primes();
+        dup(fd[READ]); //copy fd_read -> 0
+        close_pipe(fd);// clean fd
+        primes();      
     }
     else
     {
         close(WRITE);
-        dup(fd[WRITE]);
-        close_pipe(fd);
-        while ((len = read(READ, &next_num, sizeof(int)))>0 && next_num >0)
+        dup(fd[WRITE]); // copy fd_write -> 1
+        close_pipe(fd); // clean fd
+        while ((len = read(READ, &next_num, sizeof(int)))>0 && next_num >0) // get num from pipe
         {
-            if (next_num % prev_num != 0)
+            if (next_num % prev_num != 0) // write primes to next_pipe
             {
                 write(WRITE, &next_num, sizeof(int));
             }
         }
-        if (len <= 0 || next_num <= 0)
+        if (len <= 0 || next_num <= 0) //read_over
         {
             close(WRITE);
             exit();
@@ -70,7 +70,7 @@ int main()
         dup(fd[WRITE]);
         close_pipe(fd);
         // init 2-35
-        for(n = 2; n <= 35; n++)
+        for(n = 2; n <= 35; n++) //All numbers written to fd_write
         {
             write(WRITE, &n, sizeof(int));
         }
