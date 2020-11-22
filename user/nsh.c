@@ -10,9 +10,7 @@
 #define WORDS 30
 #define LINE 100
 
-char whitespace[] = " \t\r\n\v"; //use as sh.c
-
-
+char whitespace[] = " \t\r\n\v"; //use as  sh.c
 int getcmd(char *buf, int nbuf) //get cmd from terminal
 {
     fprintf(2, "@ ");
@@ -22,11 +20,12 @@ int getcmd(char *buf, int nbuf) //get cmd from terminal
         return -1;
     return 0;
 }
-// end 
+// refer end 
+
 char args[ARGS][WORDS]; //arglist  set as global to use conveniently in different functions
-void parse_args(char* cmd, int* argc, char* argv[]);
-void run_cmd(int argc, char* argv[]);
-void exec_pipe(int argc, char* argv[]);
+void parse_args(char* cmd, int* argc, char* argv[]); // parse input_cmd and store in args[][]
+void run_cmd(int argc, char* argv[]);// run cmd function_choice as a baby_shell
+void exec_pipe(int argc, char* argv[]); // split cmd while meeting pipe"|" and dup fd[]
 
 int main()
 {
@@ -40,7 +39,7 @@ int main()
             parse_args(buf,&argc,argv);
             run_cmd(argc, argv);
         }
-        wait(0); //wait for child_process exit
+        wait(0); //wait for exit of child_process
     }
     exit(0);
 }
@@ -116,16 +115,16 @@ void exec_pipe(int argc, char* argv[])
     {
         // child_process exec cmd in the left
         close(WRITE);
-        dup(fd[WRITE]);
+        dup(fd[WRITE]);//copy fd[WRITE] -> WRITE
         close(fd[READ]);
-        close(fd[WRITE]); //save fd num
+        close(fd[WRITE]);//save fd num
         run_cmd(index,argv);
     }
     else
     {
         // parent_process exec cmd in the right
         close(READ);
-        dup(fd[READ]);
+        dup(fd[READ]);//copy fd[READ] -> READ
         close(fd[READ]);
         close(fd[WRITE]);//save fd num
         run_cmd(argc-index-1,argv+index+1);
