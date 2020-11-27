@@ -9,13 +9,14 @@
 #include "riscv.h"
 #include "defs.h"
 
-#define KMEMNUM 5
+#define KMEMNUM 5 // set kmem_num to 5
 void freerange(void *pa_start, void *pa_end); //alloc free mem
 
 
 // added functions
 void *steal(); //steal free mem from other process
 int nowcpu(); // return present cpu_id
+// end
 
 extern char end[]; // first address after kernel.
                    // defined by kernel.ld.
