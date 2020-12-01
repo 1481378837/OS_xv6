@@ -16,7 +16,6 @@
 struct devsw devsw[NDEV];
 struct {
   struct spinlock lock;
-  struct file file[NFILE];
 } ftable;
 
 void
@@ -26,18 +25,25 @@ fileinit(void)
 }
 
 // Allocate a file structure.
-struct file*
-filealloc(void)
+struct file* filealloc(void)
 {
   struct file *f;
-
+  //f = bd_malloc(sizeof(struct file));
   acquire(&ftable.lock);
-  for(f = ftable.file; f < ftable.file + NFILE; f++){
-    if(f->ref == 0){
-      f->ref = 1;
-      release(&ftable.lock);
-      return f;
-    }
+  f = bd_malloc(sizeof(struct file));
+  // for(f = ftable.file; f < ftable.file + NFILE; f++){
+  //   if(f->ref == 0){
+  //     f->ref = 1;
+  //     release(&ftable.lock);
+  //     return f;
+  //   }
+  // }
+  if(f) //malloc success
+  {
+    memset(f,0,sizeof(struct file)); //init memory
+    f->ref = 1;
+    release(&ftable.lock);
+    return f;
   }
   release(&ftable.lock);
   return 0;
@@ -56,8 +62,7 @@ filedup(struct file *f)
 }
 
 // Close file f.  (Decrement ref count, close when reaches 0.)
-void
-fileclose(struct file *f)
+void fileclose(struct file *f)
 {
   struct file ff;
 
@@ -71,6 +76,7 @@ fileclose(struct file *f)
   ff = *f;
   f->ref = 0;
   f->type = FD_NONE;
+  
   release(&ftable.lock);
 
   if(ff.type == FD_PIPE){
@@ -80,6 +86,7 @@ fileclose(struct file *f)
     iput(ff.ip);
     end_op(ff.ip->dev);
   }
+  bd_free(f); 
 }
 
 // Get metadata about file f.

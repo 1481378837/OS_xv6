@@ -16,7 +16,7 @@ def test_alloctest():
 def test_alloctest():
     r.run_qemu(shell_script([
         'alloctest'
-    ]))
+    ]),timeout=100)
     r.match("^memtest: OK$")
 
 @test(20, "usertests")
