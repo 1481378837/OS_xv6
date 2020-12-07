@@ -250,6 +250,7 @@ int bd_initfree_pair(int k, int bi, int pos) {
   int buddy = (bi % 2 == 0) ? bi+1 : bi-1;
   int free = 0;
   if(bit_check(bd_sizes[k].alloc, bi)) {
+    free = BLK_SIZE(k);
     if(pos)//pos = right => push min
     {
       if(buddy>bi)
