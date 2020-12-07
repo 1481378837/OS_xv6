@@ -15,7 +15,7 @@ static int nsizes;     // the number of entries in bd_sizes array
 #define HEAP_SIZE     BLK_SIZE(MAXSIZE) 
 #define NBLK(k)       (1 << (MAXSIZE-k))         // Number of block at size k
 #define ROUNDUP(n,sz) (((((n)-1)/(sz))+1)*(sz))  // Round up to the next multiple of sz
-#define ADDR_IN_RANGE(addr,free_right,left,right) ((addr>=left)&&(free_right)<right) // Check addr(with size) in [left,right)
+
 typedef struct list Bd_list;
 
 // The allocator has sz_info for each size k. Each sz_info has a free
@@ -188,7 +188,7 @@ void bd_free(void *p) {
     if (bit_check(bd_sizes[k].alloc, bi)) {  // is buddy allocated? //xor is 1 so buddy is allocated
       break;   // break out of loop
     }
-    // budy is free; merge with buddy
+    // buddy is free; merge bi with buddy
     q = addr(k, buddy);
     lst_remove(q);    // remove buddy from free list
     if(buddy % 2 == 0) {
@@ -245,18 +245,33 @@ bd_mark(void *start, void *stop)
 
 // If a block is marked as allocated and the buddy is free, put the
 // buddy on the free list at size k.
-int bd_initfree_pair(int k, int bi,  void* left, void* right) {
+//pos = 0 left_border ;  pos = 1 right_border
+int bd_initfree_pair(int k, int bi, int pos) {
   int buddy = (bi % 2 == 0) ? bi+1 : bi-1;
   int free = 0;
   if(bit_check(bd_sizes[k].alloc, bi)) {
-    // one of the pair is free
-    free = BLK_SIZE(k);
-    void* a = addr(k,bi);
-    void* free_right = a+free;
-    if(!ADDR_IN_RANGE(a,free_right,left,right))
-      lst_push(&bd_sizes[k].free, addr(k, buddy));   // put buddy on free list
-    else
-      lst_push(&bd_sizes[k].free, addr(k, bi));      // put bi on free list
+    if(pos)//pos = right => push min
+    {
+      if(buddy>bi)
+      {
+        lst_push(&bd_sizes[k].free, addr(k, bi)); 
+      }
+      else
+      {
+        lst_push(&bd_sizes[k].free, addr(k, buddy)); 
+      }
+    }
+    else//pos = left => push max
+    {
+      if(buddy>bi)
+      {
+        lst_push(&bd_sizes[k].free, addr(k, buddy)); 
+      }
+      else
+      {
+        lst_push(&bd_sizes[k].free, addr(k, bi)); 
+      }
+    }
   }
   return free;
 }
@@ -270,10 +285,10 @@ int bd_initfree(void *bd_left, void *bd_right) {
   for (int k = 0; k < MAXSIZE; k++) {   // skip max size
     int left = blk_index_next(k, bd_left);
     int right = blk_index(k, bd_right);
-    free += bd_initfree_pair(k, left, bd_left, bd_right);
+    free += bd_initfree_pair(k, left, 0);
     if(right <= left)
       continue;
-    free += bd_initfree_pair(k, right, bd_left, bd_right);
+    free += bd_initfree_pair(k, right, 1);
   }
   return free;
 }
