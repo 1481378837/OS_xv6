@@ -84,7 +84,7 @@ void run_cmd(int argc, char* argv[])
         if(strcmp(argv[i],">")==0) // get ">", redirect output
         {
             close(WRITE);
-            open(argv[i+1], O_CREATE|O_WRONLY); // then set create_fd as stdout_fd
+            open(argv[i+1], O_CREATE|O_WRONLY); // then set create_mode stdout_mode
             argv[i] = 0;
         }
         if(strcmp(argv[i],"<")==0)// get "<", redirect stdin
